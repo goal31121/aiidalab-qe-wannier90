@@ -1,66 +1,76 @@
 # aiidalab-qe-wannier90
 
-A plugin for running Wannier calculations inside the AiiDAlab Quantum ESPRESSO App.
+Lightweight integration to run Wannier90 workflows within the AiiDAlab Quantum ESPRESSO application.
 
-## Features
+## Key features
 
-- **Band structure comparison** with DFT bands.
-- With predefined protocols (`fast`, `balanced`, `stringent`)
-- **Optional real-space Wannier functions** (3D visualization) with the atomic structure.
+- Band-structure comparison against DFT results.
+- Predefined protocols: `fast`, `balanced`, `stringent`.
+- Export and visualize real-space Wannier functions (isosurfaces / 3D meshes).
 
-<img src="docs/source/_static/images/overview.png"  width="800px"/>
+![Overview](docs/source/_static/images/overview.png)
 
+## Quickstart
 
-<!-- <img src="docs/source/_static/images/qeapp-wannier90-wf.gif"  width="100%"/> -->
+Prerequisites: an AiiDA profile with Quantum ESPRESSO and Wannier90 available.
 
+Install from the repository root (editable install recommended for development):
 
-## Usage
-Run Wannier calculations via the AiiDAlab QE App GUI.
+```bash
+pip install -e .
+```
 
-
-validate the installation by running the following command:
+Validate a local Wannier90 installation:
 
 ```bash
 ./wannier90.x -h
 ```
 
+## Usage
 
+The primary entrypoint is the AiiDAlab QE App GUI — run workflows and view results there. For isosurface workflows the package can produce mesh data as AiiDA output nodes that are then visualized in the AiiDAlab front-end, avoiding large file downloads.
 
-## Isosurface
+## PythonJob isosurface helper
 
-I used PythonJob to calculate the isosurface of the wannier function, and save the mesh data as AiiDA output node, then visualize the isosurface using the `weas-widget`. This avoids the need to download and save the large density file.
+To compute and export isosurface meshes using a `pythonjob` calculation, install the required Python packages in the environment used by the code:
 
-
-### Set up PythonJob code
-To setup the `python` code for isosurface calculation, you need to install the following packages in the Python environment:
-
-```
-cloudpickle
-scikit-image
-ase
+```bash
+pip install cloudpickle scikit-image ase
 ```
 
-Then one can use `verdi` command create the `pythonjob` code. Here is an example configuration file to setup the `pythonjob` code:
+Example `pythonjob` configuration (adjust `filepath_executable` and modules to your system):
 
 ```yaml
 ---
 label: python3
-description: python3.9.10 at Merlin 7
+description: python3.9
 default_calc_job_plugin: pythonjob.pythonjob
-filepath_executable: /opt/psi/Programming/Python/3.9.10/bin/python
+filepath_executable: /path/to/python
 prepend_text: |
     module purge
-    module load Python/3.9.10
+    module load Python/3.9
 append_text: ''
 ```
-Run the fowlling command to create the `pythonjob` code in your AiiDA profile:
 
-```
+Create the AiiDA code using `verdi` (example):
+
+```bash
 verdi code create core.code.installed --config pythonjob-code.yaml
 ```
-## Cite
-If you use the AiiDAlab QE app in your work, please cite:
 
-Wang, X., Bainglass, E., Bonacci, M., Ortega-Guerrero, A. et al.\
-Making atomistic materials calculations accessible with the AiiDAlab Quantum ESPRESSO app\
-_npj. Comput. Mater._ **12**, 72 (2026). https://doi.org/10.1038/s41524-025-01936-4
+## Citation
+
+If you use this app in published work, please cite:
+
+Wang, X., Bainglass, E., Bonacci, M., Ortega-Guerrero, A. et al. Making atomistic materials calculations accessible with the AiiDAlab Quantum ESPRESSO app. _npj Comput. Mater._ **12**, 72 (2026). https://doi.org/10.1038/s41524-025-01936-4
+
+## License
+
+See the repository `LICENSE` for license details.
+
+## Contributing
+
+Issues and pull requests are welcome. For development, run tests (if present) and open a PR with a clear summary of changes.
+
+---
+Updated README: clearer quickstart, fixed typos, and improved PythonJob instructions.
