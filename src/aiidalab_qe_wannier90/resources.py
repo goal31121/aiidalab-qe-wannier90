@@ -7,7 +7,7 @@ from aiidalab_qe.common.panel import (
 )
 
 
-class ResourceSettingsModel(PluginResourceSettingsModel):
+class Wannier90ResourceSettingsModel(PluginResourceSettingsModel):
     """Model for the wannier90 code setting plugin."""
 
     title = 'Wannier functions'
@@ -58,7 +58,7 @@ class ResourceSettingsModel(PluginResourceSettingsModel):
         )
 
 
-class ResourceSettingsPanel(
-    PluginResourceSettingsPanel[ResourceSettingsModel],
+class Wannier90ResourceSettingsPanel(
+    PluginResourceSettingsPanel[Wannier90ResourceSettingsModel],
 ):
     """Panel for configuring the wannier90 plugin."""

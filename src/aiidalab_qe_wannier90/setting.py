@@ -1,15 +1,16 @@
 """Panel for Wannier90 plugin."""
 
-from aiidalab_qe.common.panel import ConfigurationSettingsPanel
 import ipywidgets as ipw
-from .model import ConfigurationSettingsModel
 from aiidalab_qe.common.infobox import InAppGuide
+from aiidalab_qe.common.panel import ConfigurationSettingsPanel
+
+from .model import Wannier90ConfigurationSettingsModel
 
 
-class ConfigurationSettingPanel(
-    ConfigurationSettingsPanel[ConfigurationSettingsModel],
+class Wannier90ConfigurationSettingPanel(
+    ConfigurationSettingsPanel[Wannier90ConfigurationSettingsModel],
 ):
-    def __init__(self, model: ConfigurationSettingsModel, **kwargs):
+    def __init__(self, model: Wannier90ConfigurationSettingsModel, **kwargs):
         super().__init__(model, **kwargs)
 
         self._model.observe(

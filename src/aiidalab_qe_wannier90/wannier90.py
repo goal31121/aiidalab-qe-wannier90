@@ -1,12 +1,12 @@
+from pathlib import Path
+
 from aiidalab_qe.common.panel import PluginOutline
 
-from .model import ConfigurationSettingsModel
-from .resources import ResourceSettingsModel, ResourceSettingsPanel
-from .setting import ConfigurationSettingPanel
+from .model import Wannier90ConfigurationSettingsModel
+from .resources import Wannier90ResourceSettingsModel, Wannier90ResourceSettingsPanel
+from .result import Wannier90ResultsModel, Wannier90ResultsPanel
+from .setting import Wannier90ConfigurationSettingPanel
 from .workchain import workchain_and_builder
-from .result import Wannier90ResultsPanel, Wannier90ResultsModel
-
-from pathlib import Path
 
 
 class PluginOutline(PluginOutline):
@@ -16,12 +16,12 @@ class PluginOutline(PluginOutline):
 wannier90 = {
     'outline': PluginOutline,
     'configuration': {
-        'panel': ConfigurationSettingPanel,
-        'model': ConfigurationSettingsModel,
+        'panel': Wannier90ConfigurationSettingPanel,
+        'model': Wannier90ConfigurationSettingsModel,
     },
     'resources': {
-        'panel': ResourceSettingsPanel,
-        'model': ResourceSettingsModel,
+        'panel': Wannier90ResourceSettingsPanel,
+        'model': Wannier90ResourceSettingsModel,
     },
     'workchain': workchain_and_builder,
     'result': {

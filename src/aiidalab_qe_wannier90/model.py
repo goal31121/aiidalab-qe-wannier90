@@ -1,14 +1,14 @@
 import traitlets as tl
 from aiidalab_qe.common.mixins import HasInputStructure
-from aiidalab_qe.common.panel import ConfigurationSettingsModel
+from aiidalab_qe.common.panel import PanelModel
 
 
-class ConfigurationSettingsModel(ConfigurationSettingsModel, HasInputStructure):
+class Wannier90ConfigurationSettingsModel(PanelModel, HasInputStructure):
     title = 'Wannier functions'
     identifier = 'wannier90'
 
     dependencies = [
-        'input_structure',
+        'structure_uuid',
         'workchain.protocol',
         'workchain.electronic_type',
     ]
