@@ -29,6 +29,7 @@ If you use the package for research, please follow these links to:
 - `cite AiiDA Wannier90 workflow <https://github.com/aiidateam/aiida-wannier90-workflows>`_
 - `cite AiiDA <https://aiida.readthedocs.io/projects/aiida-core/en/latest/#how-to-cite>`_
 - `cite AiiDAlab <https://aiidalab.readthedocs.io/en/latest/index.html#how-to-cite>`_
+- `cite AiiDAlab Quantum ESPRESSO app <https://aiidalab-qe.readthedocs.io/#how-to-cite>`_
 - `cite Quantum ESPRESSO <https://www.quantum-espresso.org/Doc/user_guide/node6.html>`_
 - `cite Wannier90 <http://www.wannier.org/>`_
 

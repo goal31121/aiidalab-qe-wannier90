@@ -1,33 +1,10 @@
-version: 2
+sphinx:
+  configuration: docs/source/conf.py
 
 build:
   os: ubuntu-24.04
   tools:
-    python: miniconda3-3.12-24.1   # note that libmamba-solver is available since 22.1
-    nodejs: '20' # maybe need to be also miniconda
+    python: '3.11'
   jobs:
     post_create_environment:
-    # Not sure why but conda list shows
-    # typing-extensions         4.4.0                    pypi_0    pypi
-    # typing_extensions         4.15.0             pyhcf101f3_0    conda-forge
-    # I need to uninstall the one from pypi to avoid import error: cannot import name 'Sentinel' from 'typing_extensions'
-    # - conda list
-    - python -m pip uninstall -y typing-extensions
-    # - conda list
     - python -m pip install --no-cache-dir .[docs]
-    # - conda list
-    - rabbitmq-server -detached
-    - sleep 5
-    - rabbitmqctl start_app
-    - sleep 5
-    - rabbitmq-diagnostics status
-    - verdi presto
-    - verdi daemon start
-    - verdi status
-
-conda:
-  environment: docs/environment.yml
-
-# Build from the docs/ directory with Sphinx
-sphinx:
-  configuration: docs/source/conf.py
