@@ -15,6 +15,11 @@ class ResourceSettingsModel(PluginResourceSettingsModel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        def needs_skeaf(parameters: dict) -> bool:
+            wannier_params = parameters.get('wannier90', {})
+            return wannier_params.get('compute_fermi_surface', False)
+
         self.add_models(
             {
                 'pw': PwCodeModel(
@@ -41,13 +46,14 @@ class ResourceSettingsModel(PluginResourceSettingsModel):
                     name='skeaf_v1p3p0_r149',
                     description='skeaf_v1p3p0_r149',
                     default_calc_job_plugin='skeaf.skeaf',
+                    condition=needs_skeaf,
                 ),
                 'wan2skeaf': CodeModel(
                     name='wan2skeaf.jl',
                     description='wan2skeaf.jl',
                     default_calc_job_plugin='skeaf.wan2skeaf',
+                    condition=needs_skeaf,
                 ),
-
             }
         )
 
