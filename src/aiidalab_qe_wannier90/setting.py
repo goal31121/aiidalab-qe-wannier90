@@ -12,14 +12,29 @@ class ConfigurationSettingPanel(
     def __init__(self, model: ConfigurationSettingsModel, **kwargs):
         super().__init__(model, **kwargs)
 
-        # Initialize attributes to avoid AttributeError
-        self.compute_fermi_surface = None
-        self.params_fermi_surface_vbox = ipw.VBox([])
-        self.params_dhva_freqs_vbox = ipw.VBox([])
+        self._model.observe(
+            self._on_electronic_type_change,
+            'electronic_type',
+        )
+        self._model.observe(
+            self._on_compute_fermi_surface_change,
+            'compute_fermi_surface',
+        )
+        self._model.observe(
+            self._on_compute_dhva_freqs_change,
+            'compute_dhva_frequencies',
+        )
+        self._model.observe(
+            self._on_frozen_type_change,
+            'frozen_type',
+        )
 
-        # error message
+    def render(self):
+        if self.rendered:
+            return
+
         self.error_message = ipw.HTML()
-        # Warning message
+
         self.warning_message = ipw.HTML(
             """<div class='alert alert-warning'>
                 ⚠️ This plugin requires the Wannier90 code from the latest source code from the
@@ -38,24 +53,6 @@ class ConfigurationSettingPanel(
             </div>"""
         )
 
-        self._model.observe(
-            self._on_electronic_type_change,
-            'electronic_type',
-        )
-        self._model.observe(
-            self._on_compute_fermi_surface_change,
-            'compute_fermi_surface',
-        )
-        self._model.observe(
-            self._on_compute_dhva_freqs_change,
-            'compute_dhva_frequencies',
-        )
-
-    def render(self):
-
-        if self.rendered:
-            return
-
         # Workflow explanation
         workflow_explanation = ipw.HTML(
             """<details style="margin-bottom: 10px;">
@@ -69,7 +66,6 @@ class ConfigurationSettingPanel(
             </div>
             </details>"""
         )
-
 
         checkbox_layout = ipw.Layout(width='fit-content', margin='4px 2px')
         self.exclude_semicore = ipw.Checkbox(
@@ -106,9 +102,6 @@ class ConfigurationSettingPanel(
             value=self._model.scan_pdwf_parameter,
             description='Optimize PDWF thresholds',
             indent=False,
-            tooltip='If enabled, an exhaustive scan of the PDWF thresholds is ' \
-            'performed (up to 30 Wannierizations) to find those that bring the ' \
-            'bands distance (for bands up to 2 eV above the Fermi level) below 10 meV.',
         )
         ipw.link(
             (self._model, 'scan_pdwf_parameter'),
@@ -125,7 +118,7 @@ class ConfigurationSettingPanel(
             (self.plot_wannier_functions, 'value'),
         )
         self.compute_fermi_surface = ipw.Checkbox(
-            value = self._model.compute_fermi_surface,
+            value=self._model.compute_fermi_surface,
             description='Compute Fermi surface',
             indent=False,
             layout=checkbox_layout,
@@ -156,11 +149,8 @@ class ConfigurationSettingPanel(
             (self._model, 'compute_dhva_frequencies'),
             (self.compute_dhva_frequencies, 'value'),
         )
-        self.params_fermi_surface_vbox = ipw.VBox([])
-        self.params_dhva_freqs_vbox = ipw.VBox(
-            [],
-            layout=ipw.Layout(margin='0 0 0 40px'),
-        )
+        self.params_fermi_surface_vbox = ipw.VBox()
+        self.params_dhva_freqs_vbox = ipw.VBox(layout=ipw.Layout(margin='0 0 0 40px'))
 
         self.dhva_starting_phi = ipw.FloatText(
             value=self._model.dhva_starting_phi,
@@ -220,19 +210,23 @@ class ConfigurationSettingPanel(
         )
 
         # Assemble rows
-        self.dhva_first_row = ipw.HBox([
-            ipw.Label('Starting magnetic field orientation:', layout=ipw.Layout(width='200px')),
-            self.dhva_starting_phi,
-            self.dhva_starting_theta,
-            self.dhva_starting_label
-        ])
+        self.dhva_first_row = ipw.HBox(
+            [
+                ipw.Label('Starting magnetic field orientation:', layout=ipw.Layout(width='200px')),
+                self.dhva_starting_phi,
+                self.dhva_starting_theta,
+                self.dhva_starting_label,
+            ]
+        )
 
-        self.dhva_second_row = ipw.HBox([
-            ipw.Label('Final magnetic field orientation:', layout=ipw.Layout(width='200px')),
-            self.dhva_ending_phi,
-            self.dhva_ending_theta,
-            self.dhva_ending_label
-        ])
+        self.dhva_second_row = ipw.HBox(
+            [
+                ipw.Label('Final magnetic field orientation:', layout=ipw.Layout(width='200px')),
+                self.dhva_ending_phi,
+                self.dhva_ending_theta,
+                self.dhva_ending_label,
+            ]
+        )
         self.dhva_third_row = ipw.IntText(
             value=self._model.dhva_num_rotation,
             description='Number of rotation steps',
@@ -274,7 +268,6 @@ class ConfigurationSettingPanel(
             """
         )
 
-
         # Dropdown for Projection Type
         self.projection_type = ipw.Dropdown(
             options=[
@@ -290,7 +283,6 @@ class ConfigurationSettingPanel(
             style={'description_width': 'initial'},
             layout=ipw.Layout(width='700px'),
         )
-
 
         ipw.link(
             (self._model, 'projection_type'),
@@ -325,6 +317,10 @@ class ConfigurationSettingPanel(
             style={'description_width': 'initial'},
             layout=ipw.Layout(width='500px'),
         )
+        ipw.link(
+            (self._model, 'frozen_type'),
+            (self.frozen_type, 'value'),
+        )
 
         # Energy Window Input (default 2 eV)
         self.energy_window_label = ipw.HTML(
@@ -338,17 +334,17 @@ class ConfigurationSettingPanel(
             layout=ipw.Layout(width='90px'),
         )
         self.energy_window_widget = ipw.HBox(
-            children=[self.energy_window_label, self.energy_window_input],
-            layout=ipw.Layout(width='100%', align_items='center', overflow='visible'),
+            children=[
+                self.energy_window_label,
+                self.energy_window_input,
+            ],
+            layout=ipw.Layout(
+                width='100%',
+                align_items='center',
+                overflow='visible',
+            ),
         )
 
-        # Attach the event listener
-        self.frozen_type.observe(self._update_energy_window_visibility, names='value')
-
-        # Initialize visibility
-        self._update_energy_window_visibility({'new': self.frozen_type.value})
-
-        # Layout the widgets
         self.frozen_states_widget = ipw.VBox(
             [
                 self.description_html,
@@ -357,17 +353,16 @@ class ConfigurationSettingPanel(
             ],
             layout=ipw.Layout(width='100%', align_items='flex-start', overflow='visible'),
         )
-        self.frozen_type = ipw.Dropdown(
-            options=['fixed_plus_projectability', 'projectability', 'energy_fixed'],
-            value=self._model.frozen_type,
-            description='Frozen states:',
-            style={'description_width': 'initial'},
+
+        optimize_pdwf_info = ipw.HTML(
+            """<div class="alert alert-warning">
+                <b>Note:</b> If <b>Optimize PDWF thresholds</b> is enabled, an
+                exhaustive scan of the PDWF thresholds is performed (up to 30
+                Wannierizations) to find those that bring the bands distance (for
+                bands up to 2 eV above the Fermi level) below 10 meV.
+            </div>"""
         )
-        ipw.link(
-            (self._model, 'frozen_type'),
-            (self.frozen_type, 'value'),
-        )
-        # ---------------------------------------------------------------------------
+
         self.children = [
             self.error_message,
             self.warning_message,
@@ -379,17 +374,29 @@ class ConfigurationSettingPanel(
             self.retrieve_matrices,
             self.compute_fermi_surface,
             self.params_fermi_surface_vbox,
-            self.params_dhva_freqs_vbox,
             self.algorithm_description,
             self.projection_type,
             self.warning_message_pdwf,
             self.frozen_states_widget,
             self.scan_pdwf_parameter,
+            optimize_pdwf_info,
         ]
+
         self.rendered = True
 
-    def _on_electronic_type_change(self, change):
-        if change['new'] == 'insulator':
+        self._toggle_insulator_warning()
+        self._toggle_energy_window_input()
+        self._toggle_fermi_surface_parameters()
+        self._toggle_dhva_freqs_parameters()
+
+    def _on_electronic_type_change(self, _):
+        self._toggle_insulator_warning()
+
+    def _toggle_insulator_warning(self):
+        if not self.rendered:
+            return
+
+        if self._model.electronic_type == 'insulator':
             self.error_message.value = """<div style="color: red; font-weight: bold; border: 1px solid red; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
             ⚠️ Wannierization of insulators: the current automated workflow works only when treating the system as a <b>metal</b>
             (i.e., include some conduction bands). Please set <b>Electronic type</b> to <b>Metal</b> to proceed, otherwise the submission will be blocked.
@@ -401,31 +408,42 @@ class ConfigurationSettingPanel(
         else:
             self.error_message.value = ''
 
-    # Function to toggle the visibility of the energy window input
-    def _update_energy_window_visibility(self, change):
-        if change['new'] in ['fixed_plus_projectability', 'energy_fixed']:
+    def _on_frozen_type_change(self, _):
+        self._toggle_energy_window_input()
+
+    def _toggle_energy_window_input(self):
+        if not self.rendered:
+            return
+
+        if self._model.frozen_type in ('fixed_plus_projectability', 'energy_fixed'):
             self.energy_window_widget.layout.display = 'flex'
         else:
             self.energy_window_widget.layout.display = 'none'
 
     def _on_compute_fermi_surface_change(self, change):
-        # Ensure the widget is initialized before accessing it
-        if self.compute_fermi_surface is None:
+        self._toggle_fermi_surface_parameters()
+
+    def _toggle_fermi_surface_parameters(self):
+        if not self.rendered:
             return
 
-        if self.compute_fermi_surface.value:
+        if self._model.compute_fermi_surface:
             self.params_fermi_surface_vbox.children = [
                 self.fermi_surface_kpoint_distance,
                 self.compute_dhva_frequencies,
+                self.params_dhva_freqs_vbox,
             ]
         else:
             self.params_fermi_surface_vbox.children = []
 
-    def _on_compute_dhva_freqs_change(self, change):
-        # Ensure the widget is initialized before accessing it
-        if self.compute_fermi_surface is None:
+    def _on_compute_dhva_freqs_change(self, _):
+        self._toggle_dhva_freqs_parameters()
+
+    def _toggle_dhva_freqs_parameters(self):
+        if not self.rendered:
             return
-        if self.compute_fermi_surface.value and self.compute_dhva_frequencies.value:
+
+        if self._model.compute_fermi_surface and self._model.compute_dhva_frequencies:
             self.params_dhva_freqs_vbox.children = [
                 self.dhva_first_row,
                 self.dhva_second_row,
